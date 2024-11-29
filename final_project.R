@@ -5,6 +5,8 @@ library(reshape2)
 library(car)
 library(multcomp)
 library(mosaic)
+library(lmtest)
+library(tidyr)
 
 #Shriram project data
 #Multiple Linear Regression Model from Students data
@@ -60,10 +62,19 @@ hist(CGPA,main="Distribution of CGPA",col="green",xlab="CGPA",ylab="Count")
 hist(SOP,main="Distribution of SOP",col="blue",xlab="SOP",ylab="Count")
 hist(LOR,main="Distribution of LOR",col="yellow",xlab="SOP",ylab="Count")
 hist(Chance.of.Admit,main="Distribution of Chance.Of.Admit",col="orange",xlab="Chance of Admit",ylab="Count")
+
+# Pivot the data longer
+df_long=pivot_longer(StudentsData, cols = c(GRE.Score, TOEFL.Score), names_to = "Exam", values_to = "Score")
+
+# Create side-by-side histograms
+ggplot(df_long, aes(x = Score, fill = Exam)) +
+  geom_histogram(position = "dodge", bins = 30, color = "black") +
+  labs(title = "Distribution of GRE and TOEFL Scores", x = "Score", y = "Frequency") +
+  theme_classic()
+
+# Create another version of side-by-side Histogram
 StudentsData %>% 
-  pivot_longer(
-    c(GRE.Score,TOEFL.Score)
-  ) %>% 
+  pivot_longer(c(GRE.Score,TOEFL.Score)) %>% 
   ggplot(aes(value, fill=name))+
   geom_histogram(position = "dodge")
 
@@ -85,41 +96,60 @@ StudentsData.lm=lm(Chance.of.Admit~GRE.Score+TOEFL.Score+University.Rating+SOP+L
 summary(StudentsData.lm)
 anova(StudentsData.lm)
 
-#Final Multiple Regression Model
-StudentsData.lm=lm(Chance.of.Admit~GRE.Score+TOEFL.Score+LOR+CGPA+Research)
+#Final Regression Model
+add1(StudentsData.lm,StudentsData,test='F')
+StudentsData.lm=lm(Chance.of.Admit~GRE.Score+TOEFL.Score+LOR+CGPA+Research,data=StudentsData)
 summary(StudentsData.lm)
-
-#ANOVA of Overall Final Model
 anova(StudentsData.lm)
+
+#Residual Plot without BoxCox Transformation
+plot(fitted(StudentsData.lm), resid(StudentsData.lm), col = "dodgerblue",
+     pch = 20, cex = 1.5, xlab = "Fitted", ylab = "Residuals")
+abline(h = 0, lty = 2, col = "darkorange", lwd = 2)
+
+#BoxCox Transformation Model
+boxcox(StudentsData.lm, plotit = TRUE, lambda = seq(0.5, 2.5, by = 0.1))
+#lamda=1.9
+
+#Final BoxCox Transformation Model
+StudentsData.cox=lm((((Chance.of.Admit^2.2)-1) / 2.2)~GRE.Score+TOEFL.Score+LOR+CGPA+Research)
+summary(StudentsData.cox)
+
+#ANOVA model
+anova(StudentsData.lm)
+
+#studentized Breusch-Pagan 
+bptest(StudentsData.lm)
+
+#ANOVA of BoxCox Model
+
+anova(StudentsData.cox)
+
+#studentized Breusch-Pagan and Shapiro-Wilk normality test after Transformation
+bptest(StudentsData.cox)
+
+
+plot(fitted(StudentsData.cox), resid(StudentsData.cox), col = "dodgerblue",
+     pch = 20, cex = 1.5, xlab = "Fitted", ylab = "Residuals")
+abline(h = 0, lty = 2, col = "darkorange", lwd = 2)
 
 #Multicollinearity checking
 #VIF > 5 or 10 indicates high multicollinearity
 #Tolerance < 0.1 indicates high multicollinearity
 #No Multicollinearity exist between predictors
 
-vif(admission.lm)
-1 / vif(admission.lm)
+vif(StudentsData.lm)
+1 / vif(StudentsData.lm)
 
-#Residual plots for ValidMultiple Linear Regression
+
+#Residual plots for Valid Multiple Linear Regression after BoxCox Transformation
 #Residual plot is showing constant variance and doesn't show any pattern and therefore
 #proves validity of Multiple LinearRegression
 
-ggplot(StudentsData.lm, aes(x = .fitted, y = .resid)) +
+ggplot(StudentsData.cox, aes(x = .fitted, y = .resid)) +
   geom_point() +
   geom_hline(yintercept = 0) +
   labs(title='Residual vs. Fitted Values Plot', x='Fitted Values', y='Residuals')
-
-#qqplot for residual using ggplot
-
-ggplot(StudentsData.lm, aes(sample=.resid)) +
-  stat_qq()
-
-#Shapiro-Wilk test for normality of residual
-
-#Null hypothesis of the Shapiro-Wilk test is that the data is normally distributed.
-#Alternative hypothesis is that the data is not normally distributed
-
-shapiro.test(resid(StudentsData.lm))
 
 # Create scatter plots
 
