@@ -7,10 +7,18 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import math
 import plotly.express as px
+import requests
+from io import StringIO
 # from IPython.core.display import HTML
 
-file_path = r'C:\Users\Sarvesh\Desktop\STAT 4355 Assignments\STAT 4355 Final Project\admission_data.csv'
-grad_df = pd.read_csv(file_path)
+url = "https://raw.githubusercontent.com/Sarvesh30/GraduatePredictor/refs/heads/main/admission_data.csv"
+
+response = requests.get(url)
+
+#file_path = r'C:\Users\Sarvesh\Desktop\STAT 4355 Assignments\STAT 4355 Final Project\admission_data.csv'
+#grad_df = pd.read_csv(file_path)
+
+grad_df = pd.read_csv(StringIO(response.text))
 
 # Assign column names
 grad_df.columns = ['GRE', 'TOEFL', 'UnivRtg', 'SOP', 'LOR', 'CGPA', 'Research', 'AdmitChance']
