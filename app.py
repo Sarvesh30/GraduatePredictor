@@ -368,7 +368,7 @@ df = pd.DataFrame({'Actual': actual_y, 'Predicted': pred_y})
 fig = px.scatter(df, 
                  x='Predicted', 
                  y='Actual', 
-                 title='Actual vs Predicted Admission Chances',
+                 title='Actual vs Predicted Admission Chances of Past Students',
                  labels={'Predicted': 'Predicted Admission Chances', 'Actual': 'Actual Admission Chances'})
 
 # Update trace to set marker color to orange and customize the markers
