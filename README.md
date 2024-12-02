@@ -1,1 +1,12 @@
 Final project for STAT 4355 which deals with predicting the graduate admission chance for academically strong students
+- Utilizes various statistical techniques to observe the relationships between multiple predictors and the admission chance:
+    - ANOVA Testing
+    - Model Transformations (Box-Cox)
+    - Post Hoc Analysis
+    - Normality Techniques utilizing residuals
+    - VIFs
+- Explores Machine Learning Algorithms and Concepts
+    - XGBoost for Regression
+    - K-Fold Cross Validation
+    - Model Performances
+- Implemented an app via streamlit where students can input their academic profiles and see their admission chances
